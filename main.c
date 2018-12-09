@@ -26,17 +26,17 @@ int main(int argc, char *argv[])
     }
 
     if(strcmp("corrupt",argv[3])==0 && (argc==6)){
-        write(1,"esecuzione 2",strlen("esecuzione 2"));
+        command_corrupt(sockfd,argv[4],argv[5]);
         return 0;
     }
 
     if(strcmp("search",argv[3])==0 && (argc==5)){
-        write(1,"esecuzione 3",strlen("esecuzione 3"));
+        command_search(sockfd,argv[5]);
         return 0;
     }
 
     if(strcmp("list",argv[3])==0 && (argc==4)){
-        write(1,"esecuzione 4",strlen("esecuzione 4"));
+        command_list(sockfd);
         return 0;
     }
 

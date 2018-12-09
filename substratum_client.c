@@ -61,32 +61,148 @@ int connect_to_server(char *ip,char *port){
 }
 
 void command_store(int sockfd, char *arg1,char *arg2){
-     int     byte         =-1;
+     int      byte             =-1;
+     int      dim_buf_err      = 128;
 
      char    *str;
+     char    *buf_err;
 
-
+    buf_err = malloc(dim_buf_err * sizeof(char));
     str=malloc(sizeof(char));
 
 
      //invio al server il comando "store"
-     write(sockfd,"store",5);
+     //con un solo carattere non devo sincronizzare
+     write(sockfd,"s",1);
+
      write(sockfd,arg1,1);
+
      write(sockfd,arg2,1);
 
      byte=read(sockfd,str,1);
-   /*  if(byte<0){
-        perror("errore read\n");
-        exit(-1);
+     if(byte<0){
+         sprintf(buf_err, "ERR_READ");
+         write(2, buf_err, strlen(buf_err));
+         free(buf_err);
+         exit(-1);
 
-     }*/
+     }
 
     if(strcmp("1",str)==0){
-       write(1,"Store Success\n",strlen("Store Success\n"));
+       write(1,"Store success\n",strlen("Store success\n"));
     }else{
-        write(1,"Argument already existed\n",strlen("Argument already existed\n"));
+        write(1,"Key already exists\n",strlen("Key already exists\n"));
     }
 
+    free(str);
+    close(sockfd);
+
+}
+
+
+
+void command_corrupt(int sockfd, char *arg1,char *arg2){
+    int      byte             =-1;
+    int      dim_buf_err      = 128;
+
+    char    *str;
+    char    *buf_err;
+
+    buf_err = malloc(dim_buf_err * sizeof(char));
+    str=malloc(sizeof(char));
+
+
+    //invio al server il comando "corrupt"
+    //stessa logica di store
+    write(sockfd,"c",1);
+
+    write(sockfd,arg1,1);
+
+    write(sockfd,arg2,1);
+
+    byte=read(sockfd,str,1);
+    if(byte<0){
+        sprintf(buf_err, "ERR_READ");
+        write(2, buf_err, strlen(buf_err));
+        free(buf_err);
+        exit(-1);
+
+    }
+
+    if(strcmp("1",str)==0){
+        write(1,"Corrupt success\n",strlen("Corrupt success\n"));
+    }else{
+        write(1,"Key not exists\n",strlen("Key not exists\n"));
+    }
+
+    free(str);
+    close(sockfd);
+
+}
+
+
+void command_search(int sockfd, char *arg1){
+    int      byte             =-1;
+    int      dim_buf_err      = 128;
+
+    char    *str;
+    char    *buf_err;
+
+    buf_err = malloc(dim_buf_err * sizeof(char));
+    str=malloc(sizeof(char));
+
+    //search
+    write(sockfd,"S",1);
+
+    write(sockfd,arg1,1);
+
+    byte=read(sockfd,str,1);
+    if(byte<0){
+        sprintf(buf_err, "ERR_READ");
+        write(2, buf_err, strlen(buf_err));
+        free(buf_err);
+        exit(-1);
+
+    }
+
+    //1 tutte le coppie uguali 2 Ledger corrotto 0 chiave non esiste
+    if(strcmp("1",str)==0){
+        write(1,"Search success\n",strlen("Search success\n"));
+    }else if(strcmp("2",str)==0){
+        write(1,"Ledger corrupt\n",strlen("Ledger corrupt\n"));
+       }else{
+        write(1,"Key not exists\n",strlen("Key not exists\n"));
+        }
+
+
+    free(str);
+    close(sockfd);
+}
+
+void command_list(int sockfd){
+
+    int      byte             =-1;
+    int      dim_buf_err      = 128;
+
+    char    *str;
+    char    *buf_err;
+
+    buf_err = malloc(dim_buf_err * sizeof(char));
+    str=malloc(sizeof(char));
+
+    //search
+    write(sockfd,"l",1);
+
+    while(byte!=0){
+        byte=read(sockfd,str,1);
+        if(byte<0){
+            sprintf(buf_err, "ERR_READ");
+            write(2, buf_err, strlen(buf_err));
+            free(buf_err);
+            exit(-1);
+
+        }
+    }
     free(str);
     close(sockfd);
 

@@ -12,7 +12,14 @@
 
 
 int connect_to_server(char *ip,char *port);
-void command_store(int sockfd,char *arg1,char *argv2);
+
+void command_store(int sockfd,char *arg1,char *arg2);
+
+void command_corrupt(int sockfd,char *arg1,char *arg2);
+
+void command_search(int sockfd,char *arg1);
+
+void command_list(int sockfd);
 
 
 #endif //LSO_MAIN_CLIENT_SUBSTRATUM_CLIENT_H
