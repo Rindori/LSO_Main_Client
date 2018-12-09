@@ -9,7 +9,7 @@ int connect_to_server(char *ip,char *port){
     int     check            =-1;
 
     int     sockfd           =-1;
-    int     result_aton      =-1;
+
     int     converted_port   =-1;
     struct  sockaddr_in      server_addr;
 
@@ -28,8 +28,8 @@ int connect_to_server(char *ip,char *port){
     server_addr.sin_port = htons((uint16_t )converted_port);
 
     //conversione da dot a binary
-    result_aton = inet_aton(ip, &server_addr.sin_addr);
-    if (result_aton==0) {
+    check = inet_aton(ip, &server_addr.sin_addr);
+    if (check==0) {
         sprintf(buf_err, "ERR_CONV_ADDR_ATON");
         write(2, buf_err, strlen(buf_err));
         free(buf_err);
@@ -61,7 +61,33 @@ int connect_to_server(char *ip,char *port){
 }
 
 void command_store(int sockfd, char *arg1,char *arg2){
+     int     byte         =-1;
+
+     char    *str;
 
 
+    str=malloc(sizeof(char));
+
+
+     //invio al server il comando "store"
+     write(sockfd,"store",5);
+     write(sockfd,arg1,1);
+     write(sockfd,arg2,1);
+
+     byte=read(sockfd,str,1);
+   /*  if(byte<0){
+        perror("errore read\n");
+        exit(-1);
+
+     }*/
+
+    if(strcmp("1",str)==0){
+       write(1,"Store Success\n",strlen("Store Success\n"));
+    }else{
+        write(1,"Argument already existed\n",strlen("Argument already existed\n"));
+    }
+
+    free(str);
+    close(sockfd);
 
 }

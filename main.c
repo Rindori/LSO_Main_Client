@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
        sockfd=connect_to_server(argv[1],argv[2]);
 
     if(strcmp("store",argv[3])==0 && (argc==6)){
-        write(1,"esecuzione 1",strlen("esecuzione 1"));
+        command_store(sockfd,argv[4],argv[5]); //gli passo solo parametri tanto so che è store
         return 0;
     }
 
