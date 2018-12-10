@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     }
 
     if(strcmp("search",argv[3])==0 && (argc==5)){
-        command_search(sockfd,argv[5]);
+        command_search(sockfd,argv[4]);
         return 0;
     }
 

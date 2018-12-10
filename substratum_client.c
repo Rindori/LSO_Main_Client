@@ -36,8 +36,6 @@ int connect_to_server(char *ip,char *port){
         exit(-1);
     }
 
-    //server_addr.sin_addr= htons(&server_addr.sin_addr);
-
     //creazione socket
     sockfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
@@ -60,6 +58,9 @@ int connect_to_server(char *ip,char *port){
    return (sockfd);
 }
 
+
+
+
 void command_store(int sockfd, char *arg1,char *arg2){
      int      byte             =-1;
      int      dim_buf_err      = 128;
@@ -68,17 +69,28 @@ void command_store(int sockfd, char *arg1,char *arg2){
      char    *buf_err;
 
     buf_err = malloc(dim_buf_err * sizeof(char));
-    str=malloc(sizeof(char));
+    str=malloc(15*sizeof(char));
 
 
      //invio al server il comando "store"
      //con un solo carattere non devo sincronizzare
      write(sockfd,"s",1);
 
-     write(sockfd,arg1,1);
+     write(sockfd,arg1,15);
 
-     write(sockfd,arg2,1);
+     //ricevo token
+     byte=read(sockfd,str,1);
+     if(byte<0){
+        sprintf(buf_err, "ERR_READ_TOKEN");
+        write(2, buf_err, strlen(buf_err));
+        free(buf_err);
+        exit(-1);
 
+      }
+
+     write(sockfd,arg2,15);
+
+    //funziona sia da token di ritorno che come esito per il server
      byte=read(sockfd,str,1);
      if(byte<0){
          sprintf(buf_err, "ERR_READ");
@@ -94,12 +106,11 @@ void command_store(int sockfd, char *arg1,char *arg2){
         write(1,"Key already exists\n",strlen("Key already exists\n"));
     }
 
+    free(buf_err);
     free(str);
     close(sockfd);
 
 }
-
-
 
 void command_corrupt(int sockfd, char *arg1,char *arg2){
     int      byte             =-1;
@@ -109,17 +120,28 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
     char    *buf_err;
 
     buf_err = malloc(dim_buf_err * sizeof(char));
-    str=malloc(sizeof(char));
+    str=malloc(15*sizeof(char));
 
 
     //invio al server il comando "corrupt"
     //stessa logica di store
     write(sockfd,"c",1);
 
-    write(sockfd,arg1,1);
+    write(sockfd,arg1,15);
 
-    write(sockfd,arg2,1);
+    //ricevo token
+    byte=read(sockfd,str,1);
+    if(byte<0){
+        sprintf(buf_err, "ERR_READ_TOKEN");
+        write(2, buf_err, strlen(buf_err));
+        free(buf_err);
+        exit(-1);
 
+    }
+
+    write(sockfd,arg2,15);
+
+    //funziona sia da token di ritorno che come esito per il server
     byte=read(sockfd,str,1);
     if(byte<0){
         sprintf(buf_err, "ERR_READ");
@@ -135,11 +157,11 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
         write(1,"Key not exists\n",strlen("Key not exists\n"));
     }
 
+    free(buf_err);
     free(str);
     close(sockfd);
 
 }
-
 
 void command_search(int sockfd, char *arg1){
     int      byte             =-1;
@@ -154,11 +176,12 @@ void command_search(int sockfd, char *arg1){
     //search
     write(sockfd,"S",1);
 
-    write(sockfd,arg1,1);
+    write(sockfd,arg1,15);
 
+    //funziona sia da token di ritorno che come esito per il server
     byte=read(sockfd,str,1);
     if(byte<0){
-        sprintf(buf_err, "ERR_READ");
+        sprintf(buf_err, "ERR_READ_TOKEN");
         write(2, buf_err, strlen(buf_err));
         free(buf_err);
         exit(-1);
@@ -174,7 +197,7 @@ void command_search(int sockfd, char *arg1){
         write(1,"Key not exists\n",strlen("Key not exists\n"));
         }
 
-
+    free(buf_err);
     free(str);
     close(sockfd);
 }
@@ -185,24 +208,36 @@ void command_list(int sockfd){
     int      dim_buf_err      = 128;
 
     char    *str;
+    char    *output;
     char    *buf_err;
 
     buf_err = malloc(dim_buf_err * sizeof(char));
-    str=malloc(sizeof(char));
+    str=malloc(15*sizeof(char));
+    output=malloc(15*sizeof(char));
 
     //search
     write(sockfd,"l",1);
 
-    while(byte!=0){
-        byte=read(sockfd,str,1);
-        if(byte<0){
-            sprintf(buf_err, "ERR_READ");
-            write(2, buf_err, strlen(buf_err));
-            free(buf_err);
-            exit(-1);
+     do {
+         byte = read(sockfd, str, 15);
+         write(sockfd,"1",1);
+         if (byte < 0) {
+             sprintf(buf_err, "ERR_READ");
+             write(2, buf_err, strlen(buf_err));
+             free(buf_err);
+             exit(-1);
+         }else if(byte!=0){
+             write(1, str, byte);
+             write(1, " ", 1);
 
-        }
-    }
+         }
+
+
+
+        }while(byte !=0);
+
+
+    free(buf_err);
     free(str);
     close(sockfd);
 
