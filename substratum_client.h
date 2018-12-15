@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -20,6 +21,8 @@ void command_corrupt(int sockfd,char *arg1,char *arg2);
 void command_search(int sockfd,char *arg1);
 
 void command_list(int sockfd);
+
+void handler (int num_signal);
 
 
 #endif //LSO_MAIN_CLIENT_SUBSTRATUM_CLIENT_H

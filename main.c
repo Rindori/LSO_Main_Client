@@ -9,6 +9,8 @@ int main(int argc, char *argv[])
     int         err_buf_dim                 = 128;
     char       *err_buf                     = malloc(err_buf_dim * sizeof(char));
 
+    signal(SIGPIPE,handler);
+
     //controllo che i parametri non siano troppi o pochi
     if(argc < 4 ||argc > 6){
         sprintf(err_buf, "Invalid Command or number of parameters\n");

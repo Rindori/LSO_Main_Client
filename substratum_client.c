@@ -1,10 +1,33 @@
 #include "substratum_client.h"
 
 
-int connect_to_server(char *ip,char *port){
-
+void handler (int num_signal){
     int     dim_buf_err      = 128;
     char    *buf_err;
+
+    buf_err = malloc(dim_buf_err * sizeof(char));
+
+
+    if(num_signal==SIGPIPE){
+        sprintf(buf_err, "ERR_CONN_TIMEOUT");
+        write(2, buf_err, strlen(buf_err));
+        free(buf_err);
+        exit(-1);
+     }
+
+}
+
+
+
+
+int connect_to_server(char *ip,char *port){
+
+    int     dim_buf     = 128;
+    char    *buf;
+
+
+
+
 
     int     check            =-1;
 
@@ -13,16 +36,17 @@ int connect_to_server(char *ip,char *port){
     int     converted_port   =-1;
     struct  sockaddr_in      server_addr;
 
-    buf_err = malloc(dim_buf_err * sizeof(char));
+    buf = malloc(dim_buf * sizeof(char));
+
 
     server_addr.sin_family = AF_INET;
 
     //converto da char ad int e controllo che la porta abbia 4 cifre
     converted_port= atoi(port);
     if((converted_port<1000) ||(converted_port>9999)){
-        sprintf(buf_err, "ERR_DIGIT_PORT");
-        write(2, buf_err, strlen(buf_err));
-        free(buf_err);
+        sprintf(buf, "ERR_DIGIT_PORT");
+        write(2, buf, strlen(buf));
+        free(buf);
         exit(-1);
     }
     server_addr.sin_port = htons((uint16_t )converted_port);
@@ -30,28 +54,32 @@ int connect_to_server(char *ip,char *port){
     //conversione da dot a binary
     check = inet_aton(ip, &server_addr.sin_addr);
     if (check==0) {
-        sprintf(buf_err, "ERR_CONV_ADDR_ATON");
-        write(2, buf_err, strlen(buf_err));
-        free(buf_err);
+        sprintf(buf, "ERR_CONV_ADDR_ATON");
+        write(2, buf, strlen(buf));
+        free(buf);
         exit(-1);
     }
 
     //creazione socket
     sockfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
-        sprintf(buf_err, "ERR_SOCKET");
-        write(2, buf_err, strlen(buf_err));
-        free(buf_err);
+        sprintf(buf, "ERR_SOCKET");
+        write(2, buf, strlen(buf));
+        free(buf);
         exit(-1);
     }
 
     //richiesta connessione al server
     check=connect(sockfd,(struct sockaddr*) &server_addr,sizeof (server_addr));
     if(check<0){
-        sprintf(buf_err, "ERR_CONN_TO_SERVER");
-        write(2, buf_err, strlen(buf_err));
-        free(buf_err);
+        sprintf(buf, "ERR_CONN_TO_SERVER");
+        write(2, buf, strlen(buf));
+        free(buf);
         exit(-1);
+    }else{
+        sprintf(buf, "Established connection\n");
+        write(1, buf, strlen(buf));
+        free(buf);
     }
 
 
@@ -210,6 +238,7 @@ void command_list(int sockfd){
     char    *str;
     char    *output;
     char    *buf_err;
+    char     new_line         =0;
 
     buf_err = malloc(dim_buf_err * sizeof(char));
     str=malloc(15*sizeof(char));
@@ -227,8 +256,17 @@ void command_list(int sockfd){
              free(buf_err);
              exit(-1);
          }else if(byte!=0){
-             write(1, str, byte);
-             write(1, " ", 1);
+             //formatto l'output d'uscita a video
+             new_line+=1;
+             if(new_line==1){
+                 write(1, str, byte);
+                 write(1, " ", 1);
+             }else{
+                 write(1, str, byte);
+                 write(1, "\n", 1);
+                 new_line=0;
+             }
+
 
          }
 
