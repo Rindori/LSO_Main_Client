@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     int         err_buf_dim                 = 128;
     char       *err_buf                     = malloc(err_buf_dim * sizeof(char));
 
-    signal(SIGPIPE,handler);
+
 
     //controllo che i parametri non siano troppi o pochi
     if(argc < 4 ||argc > 6){
@@ -18,12 +18,11 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-    //effettuo la connessione qui perchè se va storto qualcosa non mi preoccupo di controllare ulteriormente la riga di comando
-    //il controllo se la connessione fallisce viene fatta nella funzione quindi è impossibile che ritorni valori sbagliati
+
        sockfd=connect_to_server(argv[1],argv[2]);
 
     if(strcmp("store",argv[3])==0 && (argc==6)){
-        command_store(sockfd,argv[4],argv[5]); //gli passo solo parametri tanto so che è store
+        command_store(sockfd,argv[4],argv[5]);
         return 0;
     }
 

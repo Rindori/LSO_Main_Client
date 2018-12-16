@@ -1,32 +1,12 @@
 #include "substratum_client.h"
 
 
-void handler (int num_signal){
-    int     dim_buf_err      = 128;
-    char    *buf_err;
-
-    buf_err = malloc(dim_buf_err * sizeof(char));
-
-
-    if(num_signal==SIGPIPE){
-        sprintf(buf_err, "ERR_CONN_TIMEOUT");
-        write(2, buf_err, strlen(buf_err));
-        free(buf_err);
-        exit(-1);
-     }
-
-}
-
-
 
 
 int connect_to_server(char *ip,char *port){
 
     int     dim_buf     = 128;
     char    *buf;
-
-
-
 
 
     int     check            =-1;
@@ -51,7 +31,7 @@ int connect_to_server(char *ip,char *port){
     }
     server_addr.sin_port = htons((uint16_t )converted_port);
 
-    //conversione da dot a binary
+
     check = inet_aton(ip, &server_addr.sin_addr);
     if (check==0) {
         sprintf(buf, "ERR_CONV_ADDR_ATON");
@@ -101,12 +81,10 @@ void command_store(int sockfd, char *arg1,char *arg2){
 
 
      //invio al server il comando "store"
-     //con un solo carattere non devo sincronizzare
      write(sockfd,"s",1);
 
      write(sockfd,arg1,15);
 
-     //ricevo token
      byte=read(sockfd,str,1);
      if(byte<0){
         sprintf(buf_err, "ERR_READ_TOKEN");
@@ -118,7 +96,7 @@ void command_store(int sockfd, char *arg1,char *arg2){
 
      write(sockfd,arg2,15);
 
-    //funziona sia da token di ritorno che come esito per il server
+
      byte=read(sockfd,str,1);
      if(byte<0){
          sprintf(buf_err, "ERR_READ");
@@ -152,7 +130,6 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
 
 
     //invio al server il comando "corrupt"
-    //stessa logica di store
     write(sockfd,"c",1);
 
     write(sockfd,arg1,15);
@@ -169,7 +146,6 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
 
     write(sockfd,arg2,15);
 
-    //funziona sia da token di ritorno che come esito per il server
     byte=read(sockfd,str,1);
     if(byte<0){
         sprintf(buf_err, "ERR_READ");
@@ -206,7 +182,7 @@ void command_search(int sockfd, char *arg1){
 
     write(sockfd,arg1,15);
 
-    //funziona sia da token di ritorno che come esito per il server
+
     byte=read(sockfd,str,1);
     if(byte<0){
         sprintf(buf_err, "ERR_READ_TOKEN");
@@ -233,47 +209,34 @@ void command_search(int sockfd, char *arg1){
 void command_list(int sockfd){
 
     int      byte             =-1;
+    int      dim              =-1;
+
+
     int      dim_buf_err      = 128;
+    char    *buf_err;
 
     char    *str;
-    char    *output;
-    char    *buf_err;
-    char     new_line         =0;
+
+
 
     buf_err = malloc(dim_buf_err * sizeof(char));
-    str=malloc(15*sizeof(char));
-    output=malloc(15*sizeof(char));
+
+    str=malloc(120*sizeof(char));
+
 
     //search
     write(sockfd,"l",1);
-
+    write(1,"Local list:\n",12);
      do {
-         byte = read(sockfd, str, 15);
-         write(sockfd,"1",1);
-         if (byte < 0) {
-             sprintf(buf_err, "ERR_READ");
-             write(2, buf_err, strlen(buf_err));
-             free(buf_err);
-             exit(-1);
-         }else if(byte!=0){
-             //formatto l'output d'uscita a video
-             new_line+=1;
-             if(new_line==1){
-                 write(1, str, byte);
-                 write(1, " ", 1);
-             }else{
-                 write(1, str, byte);
-                 write(1, "\n", 1);
-                 new_line=0;
-             }
-
-
-         }
 
 
 
-        }while(byte !=0);
 
+
+
+        }while(byte!=0);
+
+    write(1,"\nlist terminated\n",17);
 
     free(buf_err);
     free(str);
