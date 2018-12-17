@@ -1,21 +1,13 @@
 #include "substratum_client.h"
 
 
-
-
 int main(int argc, char *argv[])
 {
     int         sockfd                      =-1;
-    int         err_buf_dim                 = 128;
-    char       *err_buf                     = malloc(err_buf_dim * sizeof(char));
-
-
 
     //controllo che i parametri non siano troppi o pochi
     if(argc < 4 ||argc > 6){
-        sprintf(err_buf, "Invalid Command or number of parameters\n");
-        write(2,err_buf,strlen(err_buf));
-        exit(-1);
+        breaking_exec_err(0);
     }
 
 
@@ -42,10 +34,6 @@ int main(int argc, char *argv[])
     }
 
     //se non trova nessun "pattern" significa che il comando non è valido o non ha i parametri giusti
-    sprintf(err_buf, "Invalid Command or number of parameters\n");
-    write(2,err_buf,strlen(err_buf));
-    exit(-1);
-
-
+    breaking_exec_err(0);
 
 }

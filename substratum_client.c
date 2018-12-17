@@ -1,13 +1,7 @@
 #include "substratum_client.h"
 
 
-
-
 int connect_to_server(char *ip,char *port){
-
-    int     dim_buf     = 128;
-    char    *buf;
-
 
     int     check            =-1;
 
@@ -16,50 +10,34 @@ int connect_to_server(char *ip,char *port){
     int     converted_port   =-1;
     struct  sockaddr_in      server_addr;
 
-    buf = malloc(dim_buf * sizeof(char));
-
 
     server_addr.sin_family = AF_INET;
 
     //converto da char ad int e controllo che la porta abbia 4 cifre
     converted_port= atoi(port);
     if((converted_port<1000) ||(converted_port>9999)){
-        sprintf(buf, "ERR_DIGIT_PORT");
-        write(2, buf, strlen(buf));
-        free(buf);
-        exit(-1);
+        breaking_exec_err(2);
     }
     server_addr.sin_port = htons((uint16_t )converted_port);
 
 
     check = inet_aton(ip, &server_addr.sin_addr);
     if (check==0) {
-        sprintf(buf, "ERR_CONV_ADDR_ATON");
-        write(2, buf, strlen(buf));
-        free(buf);
-        exit(-1);
+        breaking_exec_err(2);
     }
 
     //creazione socket
     sockfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
-        sprintf(buf, "ERR_SOCKET");
-        write(2, buf, strlen(buf));
-        free(buf);
-        exit(-1);
+        breaking_exec_err(4);
     }
 
     //richiesta connessione al server
     check=connect(sockfd,(struct sockaddr*) &server_addr,sizeof (server_addr));
     if(check<0){
-        sprintf(buf, "ERR_CONN_TO_SERVER");
-        write(2, buf, strlen(buf));
-        free(buf);
-        exit(-1);
+        breaking_exec_err(5);
     }else{
-        sprintf(buf, "Established connection\n");
-        write(1, buf, strlen(buf));
-        free(buf);
+        ok_conn();
     }
 
 
@@ -74,10 +52,8 @@ void command_store(int sockfd, char *arg1,char *arg2){
      int      dim_buf_err      = 128;
 
      char    *str;
-     char    *buf_err;
 
-    buf_err = malloc(dim_buf_err * sizeof(char));
-    str=malloc(15*sizeof(char));
+     str=malloc(15*sizeof(char));
 
 
      //invio al server il comando "store"
@@ -87,10 +63,7 @@ void command_store(int sockfd, char *arg1,char *arg2){
 
      byte=read(sockfd,str,1);
      if(byte<0){
-        sprintf(buf_err, "ERR_READ_TOKEN");
-        write(2, buf_err, strlen(buf_err));
-        free(buf_err);
-        exit(-1);
+         breaking_exec_err(7);
 
       }
 
@@ -99,11 +72,7 @@ void command_store(int sockfd, char *arg1,char *arg2){
 
      byte=read(sockfd,str,1);
      if(byte<0){
-         sprintf(buf_err, "ERR_READ");
-         write(2, buf_err, strlen(buf_err));
-         free(buf_err);
-         exit(-1);
-
+         breaking_exec_err(6);
      }
 
     if(strcmp("1",str)==0){
@@ -112,7 +81,6 @@ void command_store(int sockfd, char *arg1,char *arg2){
         write(1,"Key already exists\n",strlen("Key already exists\n"));
     }
 
-    free(buf_err);
     free(str);
     close(sockfd);
 
@@ -120,12 +88,11 @@ void command_store(int sockfd, char *arg1,char *arg2){
 
 void command_corrupt(int sockfd, char *arg1,char *arg2){
     int      byte             =-1;
-    int      dim_buf_err      = 128;
+
 
     char    *str;
-    char    *buf_err;
 
-    buf_err = malloc(dim_buf_err * sizeof(char));
+
     str=malloc(15*sizeof(char));
 
 
@@ -137,22 +104,14 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
     //ricevo token
     byte=read(sockfd,str,1);
     if(byte<0){
-        sprintf(buf_err, "ERR_READ_TOKEN");
-        write(2, buf_err, strlen(buf_err));
-        free(buf_err);
-        exit(-1);
-
+        breaking_exec_err(7);
     }
 
     write(sockfd,arg2,15);
 
     byte=read(sockfd,str,1);
     if(byte<0){
-        sprintf(buf_err, "ERR_READ");
-        write(2, buf_err, strlen(buf_err));
-        free(buf_err);
-        exit(-1);
-
+        breaking_exec_err(6);
     }
 
     if(strcmp("1",str)==0){
@@ -161,7 +120,7 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
         write(1,"Key not exists\n",strlen("Key not exists\n"));
     }
 
-    free(buf_err);
+
     free(str);
     close(sockfd);
 
@@ -182,14 +141,9 @@ void command_search(int sockfd, char *arg1){
 
     write(sockfd,arg1,15);
 
-
     byte=read(sockfd,str,1);
     if(byte<0){
-        sprintf(buf_err, "ERR_READ_TOKEN");
-        write(2, buf_err, strlen(buf_err));
-        free(buf_err);
-        exit(-1);
-
+        breaking_exec_err(7);
     }
 
     //1 tutte le coppie uguali 2 Ledger corrotto 0 chiave non esiste
@@ -228,8 +182,6 @@ void command_list(int sockfd){
     write(sockfd,"l",1);
     write(1,"Local list:\n",12);
      do {
-
-
 
 
 
