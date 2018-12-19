@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    //se non trova nessun "pattern" significa che il comando non è valido o non ha i parametri giusti
+
     breaking_exec_err(0);
 
 }

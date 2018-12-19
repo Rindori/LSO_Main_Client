@@ -1,6 +1,27 @@
 #include "substratum_client.h"
 
 
+char* receive_all(int sockfd){
+    ssize_t  byte           = -1;
+    int      i              = 0;
+
+    int    dim_str          = 128;
+    char   *str             = malloc(dim_str*sizeof(char));
+
+    //il while legge finché non viene restituito un valore minore del buffer,
+    //cioè quando si è letto l'ultima parte della stringa, e quindi meno di 64
+    //caratteri, oppure è 0.
+    //Continua, se si è letto tutti i caratteri al suo interno e potrebbero essercene altri.
+    while( (byte = (read(sockfd,str + i,64))) == 64){
+        i += 64;
+        if(i > 128){return(NULL);}
+    }
+    if(byte<0){return (NULL);}
+
+    return (str);
+}
+
+
 int connect_to_server(char *ip,char *port){
 
     int     check            =-1;
@@ -45,119 +66,138 @@ int connect_to_server(char *ip,char *port){
 }
 
 
-
-
 void command_store(int sockfd, char *arg1,char *arg2){
-     int      byte             =-1;
-     int      dim_buf_err      = 128;
+     char    *token            =malloc(10*sizeof(char));
 
-     char    *str;
+     if(sockfd) {
+         //invio "store"
+         write(sockfd, "s", 1);
 
-     str=malloc(15*sizeof(char));
+         //attesa token
+         token = receive_all(sockfd);
+         if (strcmp(token, "ok") != 0) {
+             breaking_exec_err(6);
+         }
+
+         //invio arg1
+         write(sockfd, arg1, strlen(arg1));
+
+         //attesa token
+         token = receive_all(sockfd);
+         if (strcmp(token, "ok") != 0) {
+             breaking_exec_err(6);
+         }
+
+         //invio arg2
+         write(sockfd, arg2, strlen(arg2));
 
 
-     //invio al server il comando "store"
-     write(sockfd,"s",1);
+         //attesa token
+         token = receive_all(sockfd);
+         if (strcmp(token, "ok") == 0) {
+             write(1, "Store success\n", strlen("Store success\n"));
+         }
+         if (strcmp(token, "!ok") == 0) {
+             write(1, "Store failed\n", strlen("Store failed\n"));
 
-     write(sockfd,arg1,15);
+         }
+         if (strcmp(token, "?") == 0) {
+             write(1, "Inconsistent list\n", strlen("Inconsistent list\n"));
 
-     byte=read(sockfd,str,1);
-     if(byte<0){
-         breaking_exec_err(7);
-
-      }
-
-     write(sockfd,arg2,15);
-
-
-     byte=read(sockfd,str,1);
-     if(byte<0){
-         breaking_exec_err(6);
+         }
+     }else{
+         breaking_exec_err(4);
      }
 
-    if(strcmp("1",str)==0){
-       write(1,"Store success\n",strlen("Store success\n"));
-    }else{
-        write(1,"Key already exists\n",strlen("Key already exists\n"));
-    }
-
-    free(str);
-    close(sockfd);
+      free(token);
+      close(sockfd);
 
 }
 
 void command_corrupt(int sockfd, char *arg1,char *arg2){
-    int      byte             =-1;
+    char    *token            =malloc(10*sizeof(char));
+
+    if(sockfd) {
+        //invio "corrupt"
+        write(sockfd, "c", 1);
+
+        //attesa token
+        token = receive_all(sockfd);
+        if (strcmp(token, "ok") != 0) {
+            breaking_exec_err(6);
+        }
+
+        //invio arg1
+        write(sockfd, arg1, strlen(arg1));
+
+        //attesa token
+        token = receive_all(sockfd);
+        if (strcmp(token, "ok") != 0) {
+            breaking_exec_err(6);
+        }
+
+        //invio arg2
+        write(sockfd, arg2, strlen(arg2));
 
 
-    char    *str;
+        //attesa token
+        token = receive_all(sockfd);
+        if (strcmp(token, "ok") == 0) {
+            write(1, "Corrupt success\n", strlen("Corrupt success\n"));
+        }
+        if (strcmp(token, "!ok") == 0) {
+            write(1,"Key does not exist\n", strlen("Key does not exist\n"));
 
+        }
 
-    str=malloc(15*sizeof(char));
-
-
-    //invio al server il comando "corrupt"
-    write(sockfd,"c",1);
-
-    write(sockfd,arg1,15);
-
-    //ricevo token
-    byte=read(sockfd,str,1);
-    if(byte<0){
-        breaking_exec_err(7);
-    }
-
-    write(sockfd,arg2,15);
-
-    byte=read(sockfd,str,1);
-    if(byte<0){
-        breaking_exec_err(6);
-    }
-
-    if(strcmp("1",str)==0){
-        write(1,"Corrupt success\n",strlen("Corrupt success\n"));
     }else{
-        write(1,"Key not exists\n",strlen("Key not exists\n"));
+        breaking_exec_err(4);
     }
 
-
-    free(str);
+    free(token);
     close(sockfd);
+
 
 }
 
 void command_search(int sockfd, char *arg1){
-    int      byte             =-1;
-    int      dim_buf_err      = 128;
 
-    char    *str;
-    char    *buf_err;
+    char    *token            =malloc(10*sizeof(char));
 
-    buf_err = malloc(dim_buf_err * sizeof(char));
-    str=malloc(sizeof(char));
+    if(sockfd) {
+        //invio "search"
+        write(sockfd, "S", 1);
 
-    //search
-    write(sockfd,"S",1);
-
-    write(sockfd,arg1,15);
-
-    byte=read(sockfd,str,1);
-    if(byte<0){
-        breaking_exec_err(7);
-    }
-
-    //1 tutte le coppie uguali 2 Ledger corrotto 0 chiave non esiste
-    if(strcmp("1",str)==0){
-        write(1,"Search success\n",strlen("Search success\n"));
-    }else if(strcmp("2",str)==0){
-        write(1,"Ledger corrupt\n",strlen("Ledger corrupt\n"));
-       }else{
-        write(1,"Key not exists\n",strlen("Key not exists\n"));
+        //attesa token
+        token = receive_all(sockfd);
+        if (strcmp(token, "ok") != 0) {
+            breaking_exec_err(6);
         }
 
-    free(buf_err);
-    free(str);
+        //invio arg1
+        write(sockfd, arg1, strlen(arg1));
+
+
+        //attesa token
+        token = receive_all(sockfd);
+        if (strcmp(token, "ok") == 0) {
+            write(1, "Ledger exists\n", strlen("Ledger exists\n"));
+        }
+        if (strcmp(token, "!ok") == 0) {
+            write(1, "Ledger corrupt\n", strlen("Ledger corrupt\n"));
+
+        }
+        if (strcmp(token, "?") == 0) {
+            write(1, "Key does not exist\n", strlen("Key does not exist\n"));
+
+        }
+    }else{
+        breaking_exec_err(4);
+    }
+
+    free(token);
     close(sockfd);
+
 }
 
 void command_list(int sockfd){
@@ -165,33 +205,27 @@ void command_list(int sockfd){
     int      byte             =-1;
     int      dim              =-1;
 
-
-    int      dim_buf_err      = 128;
-    char    *buf_err;
-
     char    *str;
+    char    *token;
 
-
-
-    buf_err = malloc(dim_buf_err * sizeof(char));
-
+    token=malloc(sizeof(char));
     str=malloc(120*sizeof(char));
-
+    write(1,"Local list:\n",12);
 
     //search
     write(sockfd,"l",1);
-    write(1,"Local list:\n",12);
-     do {
+    byte=read(sockfd,token,1);
+    if(byte<0 || (strcmp("k",token)!=0)){
+        breaking_exec_err(7);
+    }
 
-
-
-
-        }while(byte!=0);
 
     write(1,"\nlist terminated\n",17);
 
-    free(buf_err);
+
     free(str);
     close(sockfd);
 
 }
+
+

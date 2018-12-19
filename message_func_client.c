@@ -12,7 +12,7 @@ char *pool_be_err[] = {
         "ERR_SOCKET",                         //4
         "ERR_CONN_TO_SERVER",                //5
         "ERR_READ" ,                        //6
-        "ERR_READ_TOKEN" ,                 //7
+        "ERR_READ_TOKEN",                  //7
         NULL
 };
 
