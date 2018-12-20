@@ -5,13 +5,17 @@ int main(int argc, char *argv[])
 {
     int         sockfd                      =-1;
 
+    signal(SIGALRM,hand_alarm);
+
     //controllo che i parametri non siano troppi o pochi
     if(argc < 4 ||argc > 6){
         breaking_exec_err(0);
     }
 
-
-       sockfd=connect_to_server(argv[1],argv[2]);
+    sockfd=connect_to_server(argv[1],argv[2]);
+    if (sockfd < 0) {
+        breaking_exec_err(4);
+    }
 
     if(strcmp("store",argv[3])==0 && (argc==6)){
         command_store(sockfd,argv[4],argv[5]);

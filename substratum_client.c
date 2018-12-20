@@ -1,6 +1,14 @@
 #include "substratum_client.h"
 
 
+void hand_alarm(int num_sig){
+
+  write(1,"TIMEOUT SERVER",strlen("TIMEOUT SERVER"));
+  exit(-1);
+
+  //con alarm(0); si resetta
+}
+
 char* receive_all(int sockfd){
     ssize_t  byte           = -1;
     int      i              = 0;
@@ -20,7 +28,6 @@ char* receive_all(int sockfd){
 
     return (str);
 }
-
 
 int connect_to_server(char *ip,char *port){
 
@@ -65,6 +72,10 @@ int connect_to_server(char *ip,char *port){
    return (sockfd);
 }
 
+/*--------------------funzioni comandi---------------*/
+/*---------------------------------------------------*/
+/*---------------------------------------------------*/
+/*---------------------------------------------------*/
 
 void command_store(int sockfd, char *arg1,char *arg2){
      char    *token            =malloc(10*sizeof(char));
@@ -72,6 +83,7 @@ void command_store(int sockfd, char *arg1,char *arg2){
      if(sockfd) {
          //invio "store"
          write(sockfd, "s", 1);
+
 
          //attesa token
          token = receive_all(sockfd);
@@ -92,7 +104,7 @@ void command_store(int sockfd, char *arg1,char *arg2){
          write(sockfd, arg2, strlen(arg2));
 
 
-         //attesa token
+         //attesa token con risultato
          token = receive_all(sockfd);
          if (strcmp(token, "ok") == 0) {
              write(1, "Store success\n", strlen("Store success\n"));
@@ -140,7 +152,7 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
         write(sockfd, arg2, strlen(arg2));
 
 
-        //attesa token
+        //attesa token risultato
         token = receive_all(sockfd);
         if (strcmp(token, "ok") == 0) {
             write(1, "Corrupt success\n", strlen("Corrupt success\n"));
@@ -178,7 +190,7 @@ void command_search(int sockfd, char *arg1){
         write(sockfd, arg1, strlen(arg1));
 
 
-        //attesa token
+        //attesa token risultato
         token = receive_all(sockfd);
         if (strcmp(token, "ok") == 0) {
             write(1, "Ledger exists\n", strlen("Ledger exists\n"));
@@ -202,28 +214,57 @@ void command_search(int sockfd, char *arg1){
 
 void command_list(int sockfd){
 
-    int      byte             =-1;
-    int      dim              =-1;
-
-    char    *str;
     char    *token;
+    char    *str;
 
-    token=malloc(sizeof(char));
-    str=malloc(120*sizeof(char));
+    int      num_elem         =0;
+    int      new_line         =0;
+
+
+    token=malloc(10*sizeof(char));
+    str=malloc(128*sizeof(char));
+
     write(1,"Local list:\n",12);
 
-    //search
-    write(sockfd,"l",1);
-    byte=read(sockfd,token,1);
-    if(byte<0 || (strcmp("k",token)!=0)){
-        breaking_exec_err(7);
+    if(sockfd){
+        //invio "list"
+        write(sockfd,"l",1);
+
+        //attesa token numero di coppie
+        token = receive_all(sockfd);
+        num_elem=atoi(token);
+
+        //invio token
+        write(sockfd,"ok",2);
+
+        for(int i=0;i<num_elem;i++){
+            //attesa chiave
+            str = receive_all(sockfd);
+
+            //invio token
+            write(sockfd,"ok",2);
+
+            write(1,str,strlen(str));
+            write(1," ",1);
+
+            //attesa valore
+            str = receive_all(sockfd);
+
+            //invio token
+            write(sockfd,"ok",2);
+
+
+            write(1,str,strlen(str));
+            write(1,"\n",1);
+
+        }
+    }else{
+        breaking_exec_err(4);
     }
-
-
     write(1,"\nlist terminated\n",17);
 
-
     free(str);
+    free(token);
     close(sockfd);
 
 }
