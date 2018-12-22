@@ -86,8 +86,8 @@ void command_store(int sockfd, char *arg1,char *arg2){
 
 
          //attesa token
-         token = receive_all(sockfd);
-         if (strcmp(token, "ok") != 0) {
+         token =receive_all(sockfd);
+         if (strcmp(token,"k") != 0) {
              breaking_exec_err(6);
          }
 
@@ -95,8 +95,8 @@ void command_store(int sockfd, char *arg1,char *arg2){
          write(sockfd, arg1, strlen(arg1));
 
          //attesa token
-         token = receive_all(sockfd);
-         if (strcmp(token, "ok") != 0) {
+         token =receive_all(sockfd);
+         if (strcmp(token, "k") != 0) {
              breaking_exec_err(6);
          }
 
@@ -106,11 +106,11 @@ void command_store(int sockfd, char *arg1,char *arg2){
 
          //attesa token con risultato
          token = receive_all(sockfd);
-         if (strcmp(token, "ok") == 0) {
+         if (strcmp(token, "k") == 0) {
              write(1, "Store success\n", strlen("Store success\n"));
          }
-         if (strcmp(token, "!ok") == 0) {
-             write(1, "Store failed\n", strlen("Store failed\n"));
+         if (strcmp(token, "found") == 0) {
+             write(1, "Key already exists\n", strlen("Key already exists\n"));
 
          }
          if (strcmp(token, "?") == 0) {
