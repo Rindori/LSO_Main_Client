@@ -22,6 +22,35 @@ void            init_buf(){
     buf = malloc(size_buf * sizeof(char));
 }
 
+void  err_internal_servers(char *code){
+
+    if(strcmp("0",code)==0){
+        write(1,"UNKNOW_ERR_FROM_SERVER\n",strlen("UNKNOW_ERR_FROM_SERVER\n"));
+    }
+
+    if(strcmp("-1",code)==0){
+        write(1,"SERVER_CRASH_CONNECT\n",strlen("SERVER_CRASH_CONNECT\n"));
+    }
+
+    if(strcmp("-2",code)==0){
+        write(1,"ERR_WRITE_SYNC_STORE\n",strlen("ERR_WRITE_SYNC_STORE\n"));
+    }
+
+    if(strcmp("-3",code)==0){
+        write(1,"ERR_PASSING_KEY",strlen("ERR_PASSING_KEY"));
+    }
+
+    if(strcmp("-4",code)==0){
+        write(1,"ERR_PASSING_VALUE\n",strlen("ERR_PASSING_VALUE\n"));
+    }
+
+    if(strcmp("-5",code)==0){
+        write(1,"ERR_WAIT\n",strlen("ERR_WAIT\n"));
+    }
+
+    exit(-1);
+}
+
 
 void breaking_exec_err (int code){
     if(!buf){init_buf();}

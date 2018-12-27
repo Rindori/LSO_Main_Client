@@ -12,6 +12,8 @@
 
 void  breaking_exec_err(int code);
 
+void  err_internal_servers(char *code);
+
 void  ok_conn();
 
 
