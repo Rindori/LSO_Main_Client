@@ -62,7 +62,7 @@ void breaking_exec_err (int code){
 
 void ok_conn(){
     if(!buf){init_buf();}
-    sprintf(buf, "\n\nEstablished connection\n\n");
-    write(0,buf,strlen(buf));
+    sprintf(buf,"Established connection\n");
+    write(1,buf,strlen(buf));
     bzero(buf,sizeof(*buf));
 }

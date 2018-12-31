@@ -85,10 +85,10 @@ void command_store(int sockfd, char *arg1,char *arg2){
          //invio "store"
          write(sockfd, "s", 1);
 
-         alarm(45);
+         //alarm(45);
          //attesa token
          token =receive_all(sockfd);
-         if (strcmp(token,"K") != 0) {
+         if (!token || strcmp(token,"K") != 0) {
              breaking_exec_err(6);
          }
 
@@ -97,7 +97,7 @@ void command_store(int sockfd, char *arg1,char *arg2){
 
          //attesa token
          token =receive_all(sockfd);
-         if (strcmp(token, "K") != 0) {
+         if (!token || strcmp(token, "K") != 0) {
              breaking_exec_err(6);
          }
 
@@ -106,18 +106,19 @@ void command_store(int sockfd, char *arg1,char *arg2){
 
          //attesa token con risultato
          token = receive_all(sockfd);
-         alarm(0);
-         if (strcmp(token, "K") == 0) {
+        // alarm(0);
+         if (token && strcmp(token, "K") == 0) {
              write(1, "Store success\n", strlen("Store success\n"));
-         }
-         if (strcmp(token, "found") == 0) {
+         }else if (token && strcmp(token, "found") == 0) {
              write(1, "Key already exists\n", strlen("Key already exists\n"));
 
-         }
-         if (strcmp(token, "K") != 0 && strcmp(token, "found") != 0 ) {
+         }else if (token && strcmp(token, "K") != 0 && strcmp(token, "found") != 0 ) {
             //indica i possibili errori nella comunicazione interna
             //fra server per cui non è stato possibile fare la store
              err_internal_servers(token);
+         }else{
+             close(sockfd);
+             breaking_exec_err(6);
          }
 
      }else{
@@ -139,7 +140,7 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
         alarm(45);
         //attesa token
         token = receive_all(sockfd);
-        if (strcmp(token, "K") != 0) {
+        if (!token || strcmp(token, "K") != 0) {
             breaking_exec_err(6);
         }
 
@@ -150,7 +151,7 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
 
         //attesa token
         token = receive_all(sockfd);
-        if (strcmp(token, "K") != 0) {
+        if (!token || strcmp(token, "K") != 0) {
             breaking_exec_err(6);
         }
 
@@ -162,12 +163,13 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
         //attesa token risultato
         token = receive_all(sockfd);
         alarm(0);
-        if (strcmp(token, "K") == 0) {
+        if (token && strcmp(token, "K") == 0) {
             write(1, "Corrupt success\n", strlen("Corrupt success\n"));
-        }
-        if (strcmp(token,"no_found") == 0) {
+        }else if (token && strcmp(token,"no_found") == 0) {
             write(1,"Key does not exist\n", strlen("Key does not exist\n"));
-
+        }else{
+            close(sockfd);
+            breaking_exec_err(6);
         }
      }else{
         breaking_exec_err(4);
@@ -190,7 +192,7 @@ void command_search(int sockfd, char *arg1){
         //alarm(45);
         //attesa token
         token = receive_all(sockfd);
-        if (strcmp(token, "K") != 0) {
+        if (!token || strcmp(token, "K") != 0) {
             breaking_exec_err(6);
         }
 
@@ -199,19 +201,19 @@ void command_search(int sockfd, char *arg1){
 
         //attesa token risultato
         token = receive_all(sockfd);
-        if (strcmp(token, "K") != 0) {
+        if (!token || strcmp(token, "K") != 0 ) {
             breaking_exec_err(6);
         }
 
         token = receive_all(sockfd);
         //alarm(0);
-        if(token && strcmp(token, "ledge_corrupt") != 0 && strcmp(token, "ledge_corrupt") != 0){
+        if(token && strcmp(token, "ledge_corrupt") != 0 && strcmp(token, "no_found") != 0){
             write(1,arg1,strlen(arg1));
             write(1," ",strlen(" "));
             write(1,token,strlen(token));
-        }else if (strcmp(token, "ledge_corrupt") == 0) {
+        }else if (token && strcmp(token, "ledge_corrupt") == 0) {
             write(1, "Ledger corrupt\n", strlen("Ledger corrupt\n"));
-        }else if (strcmp(token,"no_found") == 0) {
+        }else if (token && strcmp(token,"no_found") == 0) {
             write(1,"Key does not exist\n", strlen("Key does not exist\n"));
         }else{
             write(1,"An unexpected error, it's happened ¯\\_(ツ)_/¯",48);
@@ -256,6 +258,12 @@ void command_list(int sockfd){
                 alarm(45);
                 //attesa chiave
                 str = receive_all(sockfd);
+                if(!str){
+                   close(sockfd);
+                   alarm(0);
+                   breaking_exec_err(6);
+                }
+
                 alarm(0);
                 //invio token
                 write(sockfd, "K", 1);
