@@ -1,13 +1,12 @@
 #include "substratum_client.h"
 
 
-void hand_alarm(int num_sig){
+void hand_alarm(){
 
-  write(1,"TIMEOUT SERVER",strlen("TIMEOUT SERVER"));
+  write(2,"TIMEOUT SERVER",strlen("TIMEOUT SERVER"));
 
   exit(-1);
 
-  //con alarm(0); si resetta
 }
 
 char* receive_all(int sockfd){
@@ -17,10 +16,7 @@ char* receive_all(int sockfd){
     int    dim_str          = 128;
     char   *str             = malloc(dim_str*sizeof(char));
 
-    //il while legge finché non viene restituito un valore minore del buffer,
-    //cioè quando si è letto l'ultima parte della stringa, e quindi meno di 64
-    //caratteri, oppure è 0.
-    //Continua, se si è letto tutti i caratteri al suo interno e potrebbero essercene altri.
+
     while( (byte = (read(sockfd,str + i,64))) == 64){
         i += 64;
         if(i > 128){return(NULL);}
@@ -85,7 +81,7 @@ void command_store(int sockfd, char *arg1,char *arg2){
          //invio "store"
          write(sockfd, "s", 1);
 
-         //alarm(45);
+         alarm(45);
          //attesa token
          token =receive_all(sockfd);
          if (!token || strcmp(token,"K") != 0) {
@@ -106,7 +102,7 @@ void command_store(int sockfd, char *arg1,char *arg2){
 
          //attesa token con risultato
          token = receive_all(sockfd);
-        // alarm(0);
+         alarm(0);
          if (token && strcmp(token, "K") == 0) {
              write(1, "Store success\n", strlen("Store success\n"));
          }else if (token && strcmp(token, "found") == 0) {
@@ -189,7 +185,7 @@ void command_search(int sockfd, char *arg1){
         //invio "search"
         write(sockfd, "S", 1);
 
-        //alarm(45);
+        alarm(45);
         //attesa token
         token = receive_all(sockfd);
         if (!token || strcmp(token, "K") != 0) {
@@ -206,7 +202,7 @@ void command_search(int sockfd, char *arg1){
         }
 
         token = receive_all(sockfd);
-        //alarm(0);
+        alarm(0);
         if(token && strcmp(token, "ledge_corrupt") != 0 && strcmp(token, "no_found") != 0){
             write(1,arg1,strlen(arg1));
             write(1," ",strlen(" "));
@@ -264,7 +260,7 @@ void command_list(int sockfd){
                    breaking_exec_err(6);
                 }
 
-                alarm(0);
+
                 //invio token
                 write(sockfd, "K", 1);
 
@@ -276,7 +272,7 @@ void command_list(int sockfd){
 
                 //invio token
                 write(sockfd, "K", 2);
-
+                alarm(0);
 
                 write(1, str, strlen(str));
                 write(1, "\n", 1);
