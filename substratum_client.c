@@ -71,6 +71,8 @@ void command_store(int sockfd, char *arg1,char *arg2){
          //attesa token
          token =receive_all(sockfd);
          if (!token || strcmp(token,"K") != 0) {
+             alarm(0);
+             close(sockfd);
              breaking_exec_err(6);
          }
 
@@ -80,6 +82,8 @@ void command_store(int sockfd, char *arg1,char *arg2){
          //attesa token
          token =receive_all(sockfd);
          if (!token || strcmp(token, "K") != 0) {
+             alarm(0);
+             close(sockfd);
              breaking_exec_err(6);
          }
 
@@ -122,6 +126,8 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
         //attesa token
         token = receive_all(sockfd);
         if (!token || strcmp(token, "K") != 0) {
+            alarm(0);
+            close(sockfd);
             breaking_exec_err(6);
         }
 
@@ -131,6 +137,8 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
         //attesa token
         token = receive_all(sockfd);
         if (!token || strcmp(token, "K") != 0) {
+            alarm(0);
+            close(sockfd);
             breaking_exec_err(6);
         }
 
@@ -154,7 +162,6 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
 
     free(token);
     close(sockfd);
-
 }
 
 void command_search(int sockfd, char *arg1){
@@ -168,6 +175,8 @@ void command_search(int sockfd, char *arg1){
         //attesa token
         token = receive_all(sockfd);
         if (!token || strcmp(token, "K") != 0) {
+            alarm(0);
+            close(sockfd);
             breaking_exec_err(6);
         }
 
@@ -177,6 +186,8 @@ void command_search(int sockfd, char *arg1){
         //attesa token risultato
         token = receive_all(sockfd);
         if (!token || strcmp(token, "K") != 0 ) {
+            alarm(0);
+            close(sockfd);
             breaking_exec_err(6);
         }
 
@@ -200,7 +211,6 @@ void command_search(int sockfd, char *arg1){
 
     free(token);
     close(sockfd);
-
 }
 
 void command_list(int sockfd){
@@ -232,8 +242,8 @@ void command_list(int sockfd){
                 //attesa chiave
                 str = receive_all(sockfd);
                 if(!str){
-                   close(sockfd);
                    alarm(0);
+                   close(sockfd);
                    breaking_exec_err(6);
                 }
 
