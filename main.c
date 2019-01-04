@@ -3,7 +3,7 @@
 
 int main(int argc, char *argv[])
 {
-    int         sockfd                      =-1;
+    int  sockfd =-1;
 
     signal(SIGALRM,hand_alarm);
 
@@ -36,7 +36,6 @@ int main(int argc, char *argv[])
         command_list(sockfd);
         return 0;
     }
-
 
     breaking_exec_err(0);
 

@@ -51,7 +51,6 @@ void  err_internal_servers(char *code){
     exit(-1);
 }
 
-
 void breaking_exec_err (int code){
     if(!buf){init_buf();}
     sprintf(buf, "%s\n", pool_be_err[code]);

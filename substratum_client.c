@@ -4,7 +4,6 @@
 void hand_alarm(){
 
   write(2,"TIMEOUT SERVER",strlen("TIMEOUT SERVER"));
-
   exit(-1);
 
 }
@@ -12,39 +11,32 @@ void hand_alarm(){
 char* receive_all(int sockfd){
     ssize_t  byte           = -1;
     int      i              = 0;
-
     int    dim_str          = 128;
     char   *str             = malloc(dim_str*sizeof(char));
-
 
     while( (byte = (read(sockfd,str + i,64))) == 64){
         i += 64;
         if(i > 128){return(NULL);}
     }
+
     if(byte<0){return (NULL);}
 
     return (str);
 }
 
 int connect_to_server(char *ip,char *port){
-
     int     check            =-1;
-
     int     sockfd           =-1;
-
     int     converted_port   =-1;
     struct  sockaddr_in      server_addr;
 
-
     server_addr.sin_family = AF_INET;
-
     //converto da char ad int e controllo che la porta abbia 4 cifre
     converted_port= atoi(port);
     if((converted_port<1000) ||(converted_port>9999)){
         breaking_exec_err(2);
     }
     server_addr.sin_port = htons((uint16_t )converted_port);
-
 
     check = inet_aton(ip, &server_addr.sin_addr);
     if (check==0) {
@@ -65,14 +57,8 @@ int connect_to_server(char *ip,char *port){
         ok_conn();
     }
 
-
    return (sockfd);
 }
-
-/*--------------------funzioni comandi---------------*/
-/*---------------------------------------------------*/
-/*---------------------------------------------------*/
-/*---------------------------------------------------*/
 
 void command_store(int sockfd, char *arg1,char *arg2){
      char    *token            =malloc(128*sizeof(char));
@@ -123,7 +109,6 @@ void command_store(int sockfd, char *arg1,char *arg2){
 
       free(token);
       close(sockfd);
-
 }
 
 void command_corrupt(int sockfd, char *arg1,char *arg2){
@@ -140,10 +125,8 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
             breaking_exec_err(6);
         }
 
-
         //invio arg1
         write(sockfd, arg1, strlen(arg1));
-
 
         //attesa token
         token = receive_all(sockfd);
@@ -151,10 +134,8 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
             breaking_exec_err(6);
         }
 
-
         //invio arg2
         write(sockfd, arg2, strlen(arg2));
-
 
         //attesa token risultato
         token = receive_all(sockfd);
@@ -174,11 +155,9 @@ void command_corrupt(int sockfd, char *arg1,char *arg2){
     free(token);
     close(sockfd);
 
-
 }
 
 void command_search(int sockfd, char *arg1){
-
     char    *token            =malloc(128*sizeof(char));
 
     if(sockfd) {
@@ -225,10 +204,8 @@ void command_search(int sockfd, char *arg1){
 }
 
 void command_list(int sockfd){
-
     char    *token;
     char    *str;
-
     int      num_elem         =0;
 
     token=malloc(10*sizeof(char));
@@ -260,7 +237,6 @@ void command_list(int sockfd){
                    breaking_exec_err(6);
                 }
 
-
                 //invio token
                 write(sockfd, "K", 1);
 
@@ -276,7 +252,6 @@ void command_list(int sockfd){
 
                 write(1, str, strlen(str));
                 write(1, "\n", 1);
-
             }
         }
     }else{
@@ -287,7 +262,6 @@ void command_list(int sockfd){
     free(str);
     free(token);
     close(sockfd);
-
 }
 
 
