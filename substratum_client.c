@@ -255,6 +255,11 @@ void command_list(int sockfd){
 
                 //attesa valore
                 str = receive_all(sockfd);
+                if(!str){
+                    alarm(0);
+                    close(sockfd);
+                    breaking_exec_err(6);
+                }
 
                 //invio token
                 write(sockfd, "K", 2);
@@ -262,6 +267,7 @@ void command_list(int sockfd){
 
                 write(1, str, strlen(str));
                 write(1, "\n", 1);
+                bzero(str,strlen(str));
             }
         }
     }else{
